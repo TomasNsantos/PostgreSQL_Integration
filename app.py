@@ -1,4 +1,4 @@
-import psycopg2
+import psycopg2 
 from datetime import datetime
 
 # Conectar ao banco de dados PostgreSQL
@@ -50,13 +50,6 @@ def manipular_dados(sql, valores):
     cur.execute(sql, valores)
     conn.commit()
 
-# Validação de data
-def validar_data(data):
-    try:
-        return datetime.strptime(data.strip(), "%Y-%m-%d")
-    except ValueError:
-        raise ValueError("Formato de data inválido. Use YYYY-MM-DD.")
-
 # Menu interativo
 while True:
     print("\nEscolha uma opção:")
@@ -67,7 +60,10 @@ while True:
     print("23: Adicionar funcionário")
     print("24: Editar funcionário")
     print("25: Adicionar venda")
-    print("26: Adicionar serviço")
+    print("26: Contratar serviço")
+    print("27: Deletar cliente")
+    print("28: Deletar funcionário")
+    print("29: Visualizar VIEW ClientesPremium")
     print("0: Sair")
 
     escolha = input("Escolha uma opção: ")
@@ -78,7 +74,6 @@ while True:
         executar_query(queries[int(escolha) - 1][1])
     elif escolha == '21':
         valores = input("Digite CPF, RUA, NUM, CEP, NOME, DT_CAD (YYYY-MM-DD) separados por vírgula: ").split(",")
-        valores[5] = validar_data(valores[5])
         manipular_dados("INSERT INTO CLIENTE (CPF, RUA, NUM, CEP, NOME, DT_CAD) VALUES (%s, %s, %s, %s, %s, %s)", valores)
     elif escolha == '22':
         valores = tuple(input("Digite o novo NOME e o CPF do cliente: ").split(","))
@@ -91,11 +86,26 @@ while True:
         manipular_dados("UPDATE FUNCIONARIO SET NOME = %s WHERE CPF = %s", valores)
     elif escolha == '25':
         valores = tuple(input("Digite CPF_CLIENTE, CPF_FUNC, CHASSI, DATA_COMPRA, STATUS: ").split(","))
-        valores[3] = validar_data(valores[3])
         manipular_dados("INSERT INTO VENDA (CPF_CLIENTE, CPF_FUNC, CHASSI, DATA_COMPRA, STATUS) VALUES (%s, %s, %s, %s, %s)", valores)
     elif escolha == '26':
-        valores = tuple(input("Digite COD e NOME do serviço: ").split(","))
-        manipular_dados("INSERT INTO SERVICOS (COD, NOME) VALUES (%s, %s)", valores)
+        valores = tuple(input("Digite CPF do cliente, COD do serviço, CHASSI do carro, data de entrada (YYYY-MM-DD), data de saída (YYYY-MM-DD): ").split(","))
+        manipular_dados("INSERT INTO CONTRATA (CPF, COD, CHASSI, DT_ENT, DT_SAI) VALUES (%s, %s, %s, %s, %s)", valores)
+    elif escolha == '27':
+        cpf = input("Digite o CPF do cliente a ser deletado: ")
+        manipular_dados("DELETE FROM CLIENTE WHERE CPF = %s", (cpf,))
+    elif escolha == '28':
+        cpf = input("Digite o CPF do funcionário a ser deletado: ")
+        manipular_dados("DELETE FROM FUNCIONARIO WHERE CPF = %s", (cpf,))
+    elif escolha == '29':
+        executar_query("SELECT * FROM ClientesPremium")
 
 cur.close()
 conn.close()
+
+# Exemplo para adicionar venda no terminal:
+# 25: Digite CPF_CLIENTE, CPF_FUNC, CHASSI, DATA_COMPRA, STATUS
+# Exemplo: 11122233345, 11122233344, 9BD111060T5002170, 2025-03-20, PENDENTE
+
+# Exemplo para contratar serviço no terminal:
+# 26: Digite CPF, COD, CHASSI, DT_ENT (YYYY-MM-DD), DT_SAI (YYYY-MM-DD)
+# Exemplo: 11122233345, 11111111, 9BD111060T5002170, 2025-03-20, 2025-03-25
