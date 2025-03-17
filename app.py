@@ -64,6 +64,9 @@ while True:
     print("27: Deletar cliente")
     print("28: Deletar funcionário")
     print("29: Visualizar VIEW ClientesPremium")
+    print("30: Inserir dono da concessionária")
+    print("31: Tornar dono chefe do gerente com mais subordinados")
+    print("32: Visualizar hierarquia de funcionários")
     print("0: Sair")
 
     escolha = input("Escolha uma opção: ")
@@ -98,6 +101,12 @@ while True:
         manipular_dados("DELETE FROM FUNCIONARIO WHERE CPF = %s", (cpf,))
     elif escolha == '29':
         executar_query("SELECT * FROM ClientesPremium")
+    elif escolha == '30':
+        executar_query("INSERT INTO FUNCIONARIO (CPF, RUA, NUM, CEP, NOME, MAT, CPF_CHEFE) VALUES ('00000000001', 'Rua da Empresa', '01', '00000000', 'FLAVIO', '00000000', '00000000001')")
+    elif escolha == '31':
+        executar_query("UPDATE FUNCIONARIO SET CPF_CHEFE = '00000000001' WHERE CPF = (SELECT CPF_CHEFE FROM FUNCIONARIO GROUP BY CPF_CHEFE ORDER BY COUNT(*) DESC LIMIT 1)")
+    elif escolha == '32':
+        executar_query("WITH RECURSIVE Hierarquia AS (SELECT CPF, NOME, CPF_CHEFE, 1 AS NIVEL FROM FUNCIONARIO WHERE CPF = '00000000001' UNION ALL SELECT F.CPF, F.NOME, F.CPF_CHEFE, H.NIVEL + 1 FROM FUNCIONARIO F JOIN Hierarquia H ON F.CPF_CHEFE = H.CPF WHERE F.CPF != H.CPF) SELECT * FROM Hierarquia ORDER BY NIVEL")
 
 cur.close()
 conn.close()
